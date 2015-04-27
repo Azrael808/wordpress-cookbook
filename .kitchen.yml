@@ -1,31 +1,16 @@
-driver_plugin: vagrant
-driver_config:
-  require_chef_omnibus: true
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_solo
 
 platforms:
   - name: ubuntu-12.04
-    run_list:
-      - recipe[apt]
-  - name: ubuntu-14.04
-    run_list:
-      - recipe[apt]
-  - name: centos-6.6
-  - name: centos-5.11
+  - name: centos-6.4
 
 suites:
   - name: default
     run_list:
-      - recipe[wordpress]
+      - recipe[wordpress::default]
     attributes:
-      mysql:
-        server_root_password: "Please-Dont-Use-In-Production"
-        server_debian_password: "Please-Dont-Use-In-Production"
-        server_repl_password: "Please-Dont-Use-In-Production"
-  - name: nginx
-    run_list:
-      - recipe[wordpress::nginx]
-    attributes:
-      mysql:
-        server_root_password: "Please-Dont-Use-In-Production"
-        server_debian_password: "Please-Dont-Use-In-Production"
-        server_repl_password: "Please-Dont-Use-In-Production"
