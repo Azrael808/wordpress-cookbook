@@ -85,6 +85,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     }
 
     chef.run_list = [
+      'recipe[apt]',
       'recipe[wordpress::default]'
     ]
   end
