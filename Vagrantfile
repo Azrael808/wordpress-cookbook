@@ -81,6 +81,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         server_root_password: 'rootpass',
         server_debian_password: 'debpass',
         server_repl_password: 'replpass'
+      },
+      wordpress: {
+        plugins: {
+          ldap_lprm: 'https://downloads.wordpress.org/plugin/ldap-login-password-and-role-manager.1.0.9.zip'
+        }
       }
     }
 
