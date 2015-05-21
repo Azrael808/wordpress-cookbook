@@ -15,41 +15,16 @@ action :install do
 end
 
 def add_plugin
-  download_and_extract(@new_resource.url, @new_resource.plugin_name)
-
-  plugin_dir = find_plugin_dir
-
-  bash "overwrite-plugin" do
-    cwd "#{node['wordpress']['dir']}/wp-content/plugins"
-    code "unzip -uo #{Chef::Config[:file_cache_path]}/#{new_resource.plugin_name}.zip"
-  end
-
-  #TODO: make this idempotent
-  bash "change-plugin-ownership" do
-    cwd "#{node['wordpress']['dir']}/wp-content/plugins"
-    code "chown -R #{node['wordpress']['install']['user']}:#{node['wordpress']['install']['group']} ./#{plugin_dir}"
-  end
-end
-
-def download_and_extract(url, name)
-  Chef::Log.info "Downloading #{name} from #{url}..."
-
   # Retrieve the file
   remote_file "#{Chef::Config[:file_cache_path]}/#{name}.zip" do
     source url
   end
-
-  # Extract the archive - assuming zip file for now (most WP plugins ship this way)
-  bash "extract-plugin" do
-    cwd "#{Chef::Config[:file_cache_path]}"
-    code "unzip -o #{name}.zip"
+  
+  # TODO: update/freshen the files in the plugins directory
+  bash "install-plugin" do
+    cwd "#{node['wordpress']['dir']}/wp-content/plugins"
+    code "temp=(mktemp -d) && unzip -d $temp #{Chef::Config[:file_cache_path]}/#{new_resource.plugin_name}.zip && mkdir #{name} && mv $temp/*/* #{name} && rmdir $temp/* $temp"
   end
-end
-
-def find_plugin_dir
-  find_dir = Mixlib::ShellOut.new("unzip -l #{Chef::Config[:file_cache_path]}/#{new_resource.plugin_name}.zip |grep ' [^/]*/$' |awk '{print $4}'")
-  find_dir.run_command
-  find_dir.stdout.chomp
 end
 
 def load_current_resource
@@ -65,15 +40,9 @@ def load_current_resource
   @current_resource
 end
 
-def plugin_exists?(url, name)
+def plugin_exists?(name)
 
-  Chef::Log.info "Checking existance of #{name} from #{url}..."
-
-  download_and_extract(url, name)
-
-  plugin_dir = find_plugin_dir
-
-  if Dir.exist?(plugin_dir)
+  if Dir.exist?("#{node['wordpress']['dir']}/wp-content/plugins/#{name}")
     return true
   end
 
